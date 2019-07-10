@@ -1,26 +1,48 @@
 import React from 'react';
-import logo from './logo.svg';
+import PlanetsPage from './pages/PlanetsPage/PlanetsPage';
+import {fetchAllPlanets} from './services/sw-api';
+import {Link, Switch, Route} from 'react-router-dom';
 import './App.css';
 
-function App() {
+class App extends React.Component {
+
+  state = {
+    planets: []
+  }
+
+  async componentDidMount() {
+    let foundPlanets = await fetchAllPlanets();
+    this.setState({
+      planets: foundPlanets.results
+    });
+  };
+
+  render(){
+    let listOfPlanets = this.state.planets.map((planet, idx) =>
+      <Link key={idx} to={`/planets/${idx}`} className="App-button">
+        {planet.name}
+      </Link>);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>Ultimate Planets Wiki</h1>
+        <p>...but only from Star Wars</p>
       </header>
+      { this.state.planets.length ?
+        <Switch>
+          <Route exact path='/' render={()=> <div>{listOfPlanets}</div> } />
+          <Route path='/planets/:id' render={props => 
+          <PlanetsPage {...props} planet={this.state.planets[props.match.params.id]}/>
+          }
+          />
+        </Switch>
+        :
+          <div className="loading">Loading...</div>
+        }
     </div>
-  );
+    );
+  }
 }
 
 export default App;
